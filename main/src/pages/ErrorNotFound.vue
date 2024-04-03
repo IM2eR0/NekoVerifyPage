@@ -6,7 +6,7 @@
       </div>
 
       <div class="text-h2" style="opacity:.4">
-        Oops. Nothing here...
+        页面走丢啦~
       </div>
 
       <q-btn
@@ -15,9 +15,13 @@
         text-color="blue"
         unelevated
         to="/"
-        label="Go Home"
+        label="回到主页"
         no-caps
       />
+
+      <div style="margin-top: 30px;">
+        {{ $pageVersion }}
+      </div>
     </div>
   </div>
 </template>

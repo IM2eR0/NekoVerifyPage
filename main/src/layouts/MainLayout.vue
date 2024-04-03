@@ -1,7 +1,7 @@
 <template>
   <q-layout view="hHh LpR fFf">
 
-    <q-header elevated class="bg-primary text-white">
+    <q-header elevated class="bg-accent text-white" height-hint="0">
       <q-toolbar>
 
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
@@ -14,7 +14,17 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="desktop" elevated>
-      <!-- drawer content -->
+
+      <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+
+      <q-item clickable @click="logout" style="color: red ;">
+        <q-item-section avatar>
+          <q-icon name="mdi-logout" />
+        </q-item-section>
+        <q-item-section>
+          <q-item-label>退出登录</q-item-label>
+        </q-item-section>
+      </q-item>
     </q-drawer>
 
     <q-page-container>
@@ -25,13 +35,17 @@
 
 <script>
 import { api } from 'boot/axios'
-import { defineComponent,ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { Cookies, Notify } from 'quasar';
+import EssentialLink from 'components/EssentialLink.vue'
 
 export default defineComponent({
   name: 'MainLayout',
-  mounted(){
-    if(!Cookies.get("uuid")){
+  components: {
+    EssentialLink
+  },
+  mounted() {
+    if (!Cookies.get("uuid")) {
       Notify.create({
         type: 'negative',
         message: 'uuid存储出现异常，请重新登录...'
@@ -41,7 +55,7 @@ export default defineComponent({
       Cookies.remove("uuid")
       return
     }
-    api.post("http://localhost:5400/server/sessions",{
+    api.post("http://localhost:5400/server/sessions", {
       accessToken: Cookies.get("accessToken"),
       requestUser: true
     }).then(
@@ -69,12 +83,38 @@ export default defineComponent({
       }
     )
 
+    const linksList = [
+      {
+        title: '个人信息',
+        icon: 'mdi-file-document-outline',
+        link: '/'
+      },
+      {
+        title: '角色列表',
+        icon: 'mdi-file-document-outline',
+        link: '/profiles'
+      },
+    ]
+
     return {
+      essentialLinks: linksList,
       leftDrawerOpen,
       webTitle,
-      toggleLeftDrawer () {
+      toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value
       }
+    }
+  },
+  methods: {
+    logout() {
+      this.$router.push('/login')
+      Cookies.remove("accessToken")
+      Cookies.remove("uuid")
+      Notify.create({
+        type: 'positive',
+        message: '成功登出！',
+        timeout: 1000
+      })
     }
   }
 })
