@@ -10,7 +10,7 @@
 
             <q-input v-model="email" label="邮箱" />
             <br>
-            <q-input v-model="userName" label="游戏内用户名" />
+            <q-input v-model="userName" label="用户名" />
             <br>
             <q-input v-model="password" label="密码" type="password" />
             <br>
@@ -91,28 +91,28 @@ export default defineComponent({
       })
 
 
-      // api.put(this.$yggApi + "/server/users", {
-      //   username: this.userName,
-      //   password: this.password
-      // }).then(
-      //   (res) => {
-      //     Cookies.set("accessToken", res["data"]["accessToken"])
-      //     notif({
-      //       type: 'positive',
-      //       message: '登录成功！',
-      //       timeout: 1000
-      //     })
-      //     this.$router.push('/')
-      //   }
-      // ).catch(
-      //   (error) => {
-      //     notif({
-      //       type: 'negative',
-      //       message: '登录失败：用户名或密码错误',
-      //       timeout: 1000
-      //     })
-      //   }
-      // )
+      api.put(this.$yggApi + "/server/users", {
+        username: this.userName,
+        password: this.password
+      }).then(
+        (res) => {
+          Cookies.set("accessToken", res["data"]["accessToken"])
+          notif({
+            type: 'positive',
+            message: '登录成功！',
+            timeout: 1000
+          })
+          this.$router.push('/')
+        }
+      ).catch(
+        (error) => {
+          notif({
+            type: 'negative',
+            message: '登录失败：用户名或密码错误',
+            timeout: 1000
+          })
+        }
+      )
     }
   }
 });

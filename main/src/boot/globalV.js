@@ -6,7 +6,8 @@ export default boot(async ({app}) => {
   // something to do
   // app.config.globalProperties.$smartEngin = smartEngin
 
-  app.config.globalProperties.$yggApi = "http://localhost:5400"
+  const yggLink = "http://localhost:5400"
+  app.config.globalProperties.$yggApi = yggLink
   app.config.globalProperties.$pageVersion = "NekoVerify v1.0"
-
+  app.provide('$yggApi', yggLink)
 })

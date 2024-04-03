@@ -17,6 +17,8 @@
 
       <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
 
+      <hr>
+
       <q-item clickable @click="logout" style="color: red ;">
         <q-item-section avatar>
           <q-icon name="mdi-logout" />
@@ -35,7 +37,7 @@
 
 <script>
 import { api } from 'boot/axios'
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, inject } from 'vue'
 import { Cookies, Notify } from 'quasar';
 import EssentialLink from 'components/EssentialLink.vue'
 
@@ -75,24 +77,41 @@ export default defineComponent({
     });
   },
   setup() {
+    const $yggApi = inject('$yggApi')
     const leftDrawerOpen = ref(false)
     const webTitle = ref("")
-    api.get("http://localhost:5400/server/settings").then(
+    api.get($yggApi + "/server/settings").then(
       (res) => {
         webTitle.value = res['data']["server"]['name'] + " - 管理面板"
       }
     )
-
+    api.get($yggApi + "/server/user/" + Cookies.get("uuid"), {
+      headers: {
+        Authorization: "Bearer " + Cookies.get("accessToken")
+      }
+    }).then(
+      (res) => {
+        res = res["data"]
+        // console.log(res)
+        sessionStorage.setItem("userInfomation", JSON.stringify(res))
+        sessionStorage.setItem("userProfiles", JSON.stringify(res.profiles))
+      }
+    )
     const linksList = [
       {
         title: '个人信息',
         icon: 'mdi-file-document-outline',
-        link: '/'
+        link: '/home'
       },
       {
         title: '角色列表',
         icon: 'mdi-file-document-outline',
         link: '/profiles'
+      },
+      {
+        title: '配置文件',
+        icon: 'mdi-file-document-outline',
+        link: '/settings'
       },
     ]
 
@@ -103,6 +122,16 @@ export default defineComponent({
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value
       }
+    }
+  },
+  mounted() {
+    if(this.$router.currentRoute.value.fullPath == "/"){
+      this.$router.push("/home")
+    }
+  },
+  updated() {
+    if(this.$router.currentRoute.value.fullPath == "/"){
+      this.$router.push("/home")
     }
   },
   methods: {

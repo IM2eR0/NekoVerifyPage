@@ -1,41 +1,22 @@
-# MioVerify (main)
+# NekoVerify
 
-MioVerify Pages
+使用 node-Yggdrasil 作为后端开发的一款 Minecraft 外置验证服务器
 
-## Install the dependencies
-```bash
-yarn
-# or
-npm install
-```
+Vue3 + Quasar 响应式单页面
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
+## 仍处于早期开发，绝大多数功能暂不可用
 
+## 已实现内容
 
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
+- 登录
+- 注册
+- 登出
 
+## 待实现主要内容
 
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
+- 资料
+- 角色管理
+- 皮肤管理
+- 管理员后台
 
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+# Welcome to submit PR

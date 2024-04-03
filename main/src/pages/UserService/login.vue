@@ -50,8 +50,6 @@ export default defineComponent({
   },
   methods: {
     onSubmit() {
-      // console.log(this.userName)
-
       let notif = Notify.create({
         type: 'ongoing',
         message: '正在登录中...'
