@@ -70,7 +70,7 @@ export default defineComponent({
       return
     }
 
-    api.post("http://localhost:5400/server/sessions", {
+    api.post(this.$yggApi+"/server/sessions", {
       accessToken: Cookies.get("accessToken"),
       requestUser: true
     }).then(
