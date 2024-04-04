@@ -3,28 +3,28 @@
     <q-page-container>
       <q-page class="flex flex-center">
         <div class="mainbox">
+          <center>
+            <h1>Login</h1>
+          </center>
+          <q-form @submit="onSubmit" class="center">
+            <q-input v-model="userName" label="邮箱" type="email" />
+            <br>
+            <q-input v-model="password" label="密码" type="password" />
+            <br>
             <center>
-              <h1>Login</h1>
+
+              <q-btn label="登录" type="submit" color="primary" icon="mdi-login" />
+              &ensp;
+              <q-btn label="注册" to="/register" color="red" icon="mdi-account" />
+
             </center>
-            <q-form @submit="onSubmit" class="center">
-              <q-input v-model="userName" label="邮箱" type="email" />
-              <br>
-              <q-input v-model="password" label="密码" type="password" />
-              <br>
-              <center>
-
-                <q-btn label="登录" type="submit" color="primary" icon="mdi-login" />
-                &ensp;
-                <q-btn label="注册" to="/register" color="red" icon="mdi-account" />
-
-              </center>
-            </q-form>
-            <div class="watermark">
-              <center>
-                {{ $pageVersion }}
-              </center>
-            </div>
+          </q-form>
+          <div class="watermark">
+            <center>
+              {{ $pageVersion }}
+            </center>
           </div>
+        </div>
       </q-page>
     </q-page-container>
   </q-layout>
@@ -67,8 +67,19 @@ export default defineComponent({
             type: 'positive',
             message: '登录成功！',
             timeout: 1000
-          })
-          this.$router.push('/')
+          });
+          api.get(this.$yggApi + "/server/user/" + Cookies.get("uuid"), {
+            headers: {
+              Authorization: "Bearer " + Cookies.get("accessToken")
+            }
+          }).then(
+            (res) => {
+              res = res["data"]
+              sessionStorage.setItem("userInfomation", JSON.stringify(res))
+              sessionStorage.setItem("userProfiles", JSON.stringify(res.profiles))
+              this.$router.push('/home')
+            }
+          )
         }
       ).catch(
         (error) => {
@@ -97,17 +108,17 @@ h1 {
   width: 320px;
 }
 
-.q-page{
+.q-page {
   background-color: #222222;
 }
 
-.mainbox{
+.mainbox {
   background-color: white;
   padding: 35px;
   border-radius: 15px;
 }
 
-.watermark{
+.watermark {
   margin: 0;
   padding: 0;
   margin-top: 20px;

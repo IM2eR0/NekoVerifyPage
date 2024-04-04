@@ -43,12 +43,18 @@
 import { api } from 'src/boot/axios';
 import { defineComponent, ref } from 'vue'
 import ProfileCard from 'src/components/ProfileCard.vue';
-import { Cookies, Notify } from 'quasar';
+import { Cookies, Notify, Loading, QSpinnerGrid } from 'quasar';
 
 export default defineComponent({
   name: "UserProfiles",
   components: {
     ProfileCard
+  },
+  setup() {
+    Loading.show({
+      spinner: QSpinnerGrid,
+      message: '正在加载数据，请稍后...',
+    })
   },
   data() {
     return {
@@ -71,7 +77,6 @@ export default defineComponent({
           api.get(this.$yggApi + "/server/profile/" + element).then(
             (res) => {
               res = res["data"]
-              console.log(res)
               this.profileList.push({
                 id: res.id,
                 name: res.name,
@@ -80,6 +85,11 @@ export default defineComponent({
             }
           )
         });
+        Loading.hide()
+      }
+    ).catch(
+      ()=>{
+        Loading.hide()
       }
     )
   },

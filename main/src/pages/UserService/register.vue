@@ -16,6 +16,8 @@
             <br>
             <q-input v-model="password2" label="再次输入一遍密码" type="password" />
             <br>
+            <q-input v-model="invitecode" label="邀请码" />
+            <br>
 
             <center>
               <q-btn label="注册" type="submit" color="primary" icon="mdi-login" />
@@ -47,12 +49,11 @@ export default defineComponent({
       password: ref(""),
       password2: ref(""),
       email: ref(""),
-      invitecode: "testcode"
+      invitecode: "1gf5xfe"
     }
   },
   methods: {
     onSubmit() {
-      // console.log(this.userName)
       if (!this.email) {
         return Notify.create({
           type: 'negative',
@@ -91,24 +92,37 @@ export default defineComponent({
       })
 
 
-      api.put(this.$yggApi + "/server/users", {
-        username: this.userName,
-        password: this.password
-      }).then(
+      api.put(this.$yggApi + "/server/users", [
+        {
+          username: this.email,
+          password: this.password,
+          nickName: this.userName,
+          inviteCode: this.invitecode
+        }
+      ]).then(
         (res) => {
+          console.log(res.data)
+          if(res.data[0].error){
+            return notif({
+              type: 'negative',
+              message: '注册失败：' + res.data[0].errorMessage,
+              timeout: 3000
+            })
+          }
           Cookies.set("accessToken", res["data"]["accessToken"])
           notif({
             type: 'positive',
-            message: '登录成功！',
+            message: '注册成功！',
             timeout: 1000
           })
-          this.$router.push('/')
+          // this.$router.push('/')
         }
       ).catch(
         (error) => {
+          error = error.response.data
           notif({
             type: 'negative',
-            message: '登录失败：用户名或密码错误',
+            message: '注册失败：' + error.errorMessage,
             timeout: 1000
           })
         }
@@ -141,7 +155,7 @@ h1 {
   border-radius: 15px;
 }
 
-.watermark{
+.watermark {
   margin: 0;
   padding: 0;
   margin-top: 20px;

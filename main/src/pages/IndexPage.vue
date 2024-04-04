@@ -31,9 +31,16 @@
         </div>
         <br>
         快捷添加：
-        <q-btn draggable style="background-color: white;">
+
+        <!-- <q-btn draggable="true" style="background-color: white;" type="a" :href="yggUrl">
           将此按钮拖至启动器
-        </q-btn>
+        </q-btn> -->
+        <a class="q-btn authlib" draggable="true" style="background-color: white;" :href="'authlib-injector:yggdrasil-server:'+yggUrl">
+          <div>
+            将我拖至启动器
+          </div>
+        </a>
+
         <br>
         <br>
 
@@ -142,5 +149,17 @@ h2 {
   font-size: 24px;
   margin: 0;
   /* margin-left: 15px; */
+}
+
+.authlib{
+  border-radius: 3px;
+}
+.authlib div{
+  padding: 0;
+  margin: 0;
+  padding-top: 2px;
+}
+.authlib:hover{
+  cursor: pointer;
 }
 </style>

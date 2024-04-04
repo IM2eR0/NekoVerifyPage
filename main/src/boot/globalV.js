@@ -1,13 +1,15 @@
 import { boot } from 'quasar/wrappers'
-
-// "async" is optional;
-// more info on params: https://v2.quasar.dev/quasar-cli/boot-files
 export default boot(async ({app}) => {
-  // something to do
-  // app.config.globalProperties.$smartEngin = smartEngin
 
+  // 请修改此项为你的后端地址
+  // 如果你使用前后一体，请修改此项为后端显示的地址或反代地址
   const yggLink = "http://localhost:5400"
+
   app.config.globalProperties.$yggApi = yggLink
+
+  // 版本号，勿动
   app.config.globalProperties.$pageVersion = "NekoVerify v1.0"
   app.provide('$yggApi', yggLink)
+  app.provide('$router', app.config.globalProperties.$router)
+
 })

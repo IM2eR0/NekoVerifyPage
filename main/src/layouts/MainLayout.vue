@@ -40,6 +40,7 @@ import { api } from 'boot/axios'
 import { defineComponent, ref, inject } from 'vue'
 import { Cookies, Notify } from 'quasar';
 import EssentialLink from 'components/EssentialLink.vue'
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -47,6 +48,17 @@ export default defineComponent({
     EssentialLink
   },
   mounted() {
+    if(!Cookies.get("accessToken")){
+      Notify.create({
+        type: 'negative',
+        message: '您还未登录，请登录...'
+      });
+      this.$router.push('/login')
+      Cookies.remove("accessToken")
+      Cookies.remove("uuid")
+      return
+    }
+
     if (!Cookies.get("uuid")) {
       Notify.create({
         type: 'negative',
@@ -57,6 +69,7 @@ export default defineComponent({
       Cookies.remove("uuid")
       return
     }
+
     api.post("http://localhost:5400/server/sessions", {
       accessToken: Cookies.get("accessToken"),
       requestUser: true
@@ -75,11 +88,25 @@ export default defineComponent({
       Cookies.remove("uuid")
       return
     });
+
+    if(this.$router.currentRoute.value.fullPath == "/"){
+      this.$router.push("/home")
+    }
+
   },
   setup() {
     const $yggApi = inject('$yggApi')
+    const $router = inject('$router')
     const leftDrawerOpen = ref(false)
     const webTitle = ref("")
+
+    if(!Cookies.get("accessToken") || !Cookies.get("uuid")){
+      useRouter().push("/login")
+      setTimeout(()=>{
+        location.reload()
+      },500)
+    }
+
     api.get($yggApi + "/server/settings").then(
       (res) => {
         webTitle.value = res['data']["server"]['name'] + " - 管理面板"
@@ -92,7 +119,6 @@ export default defineComponent({
     }).then(
       (res) => {
         res = res["data"]
-        // console.log(res)
         sessionStorage.setItem("userInfomation", JSON.stringify(res))
         sessionStorage.setItem("userProfiles", JSON.stringify(res.profiles))
       }
@@ -115,6 +141,8 @@ export default defineComponent({
       },
     ]
 
+
+
     return {
       essentialLinks: linksList,
       leftDrawerOpen,
@@ -122,11 +150,6 @@ export default defineComponent({
       toggleLeftDrawer() {
         leftDrawerOpen.value = !leftDrawerOpen.value
       }
-    }
-  },
-  mounted() {
-    if(this.$router.currentRoute.value.fullPath == "/"){
-      this.$router.push("/home")
     }
   },
   updated() {
