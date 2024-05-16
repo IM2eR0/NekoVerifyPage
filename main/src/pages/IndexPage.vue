@@ -73,13 +73,17 @@ export default defineComponent({
   },
   data() {
     return {
-      userInfomation: JSON.parse(sessionStorage.getItem("userInfomation")),
+      userInfomation: [],
       regTime: '',
-      profiles: JSON.parse(sessionStorage.getItem("userProfiles")),
+      profiles: [],
       hitokoto: '',
       regIP: '',
       yggUrl: /*window.location.protocol + "//" +*/ this.$yggApi + "/yggdrasil"
     }
+  },
+  beforeMount(){
+    this.userInfomation = JSON.parse(sessionStorage.getItem("userInfomation"))
+    this.profiles = JSON.parse(sessionStorage.getItem("userProfiles"))
   },
   mounted() {
     const options = {

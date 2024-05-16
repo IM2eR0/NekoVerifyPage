@@ -11,7 +11,6 @@
     <hr>
     <br>
     <div class="flex" style="gap: 20px;">
-      <!-- {{ profileList }} -->
       <ProfileCard v-for="key in profileList" :key="key.id" v-bind="key"></ProfileCard>
     </div>
   </q-page>
@@ -50,15 +49,9 @@ export default defineComponent({
   components: {
     ProfileCard
   },
-  setup() {
-    Loading.show({
-      spinner: QSpinnerGrid,
-      message: '正在加载数据，请稍后...',
-    })
-  },
   data() {
     return {
-      nickName: JSON.parse(sessionStorage.getItem("userInfomation")).nickName,
+      nickName: [],
       profileList: [],
       toolbar: ref(false),
       new_name: ref(""),
@@ -66,52 +59,60 @@ export default defineComponent({
     }
   },
   mounted() {
-    api.get(this.$yggApi + "/server/user/" + Cookies.get("uuid"), {
-      headers: {
-        Authorization: "Bearer " + Cookies.get("accessToken")
-      }
-    }).then(
-      (res) => {
-        res = res.data
-        res.profiles.forEach(element => {
-          api.get(this.$yggApi + "/server/profile/" + element).then(
-            (res) => {
-              res = res["data"]
-              this.profileList.push({
-                id: res.id,
-                name: res.name,
-                texture: res.properties[0].value
-              })
-            }
-          )
-        });
-        Loading.hide()
-      }
-    ).catch(
-      ()=>{
-        Loading.hide()
-      }
-    )
+    this.getProfileList()
+    this.nickName = JSON.parse(sessionStorage.getItem("userInfomation")).nickName
   },
-  methods:{
-    createNewProfile(){
-      api.put(this.$yggApi + "/server/profiles", {
+  methods: {
+    async createNewProfile() {
+      await api.put(this.$yggApi + "/server/profiles", {
         name: this.new_name,
         offlineCompatible: this.offlineable
-      },{
+      }, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
       }).then(
-        () => {
-          location.reload()
+        location.reload()
+      ).catch(
+        (err) => {
+          err = JSON.parse(err.request.response)
+          Notify.create({
+            type: 'negative',
+            message: err.errorMessage || "未知错误",
+          })
+        }
+      )
+    },
+    getProfileList() {
+      Loading.show({
+        pinner: QSpinnerGrid,
+        message: '正在加载数据，请稍后...',
+      })
+      this.profileList = []
+      api.get(this.$yggApi + "/server/user/" + Cookies.get("uuid"), {
+        headers: {
+          Authorization: "Bearer " + Cookies.get("accessToken")
+        }
+      }).then(
+        (res) => {
+          res = res.data
+          res.profiles.forEach(element => {
+            api.get(this.$yggApi + "/server/profile/" + element).then(
+              (res) => {
+                res = res["data"]
+                this.profileList.push({
+                  id: res.id,
+                  name: res.name,
+                  texture: res.properties[0].value
+                })
+              }
+            )
+          });
+          Loading.hide()
         }
       ).catch(
         () => {
-          Notify.create({
-            type: 'negative',
-            message: "该用户名已存在：" + this.new_name,
-          })
+          this.getProfileList()
         }
       )
     }

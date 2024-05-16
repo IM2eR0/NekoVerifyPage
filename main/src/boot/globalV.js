@@ -10,8 +10,7 @@ export default boot(async ({app}) => {
   app.config.globalProperties.$yggApi = yggLink
 
   // 版本号，勿动
-  app.config.globalProperties.$pageVersion = "NekoVerify v1.0"
+  app.config.globalProperties.$pageVersion = "NekoVerify v1.01"
   app.provide('$yggApi', yggLink)
   app.provide('$router', app.config.globalProperties.$router)
-
 })
