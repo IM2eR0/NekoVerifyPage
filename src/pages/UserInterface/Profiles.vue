@@ -1,16 +1,17 @@
 <template>
   <q-page>
     <div class="yggHeader">
-      <h1>{{ nickName }} 的 角色列表</h1>
+      <h1>
+        {{ nickName }} 的 角色列表
+      </h1>
       <!-- <div>testbtn</div> -->
-      <q-btn color="primary" @click="toolbar = true">
-        新建角色
-      </q-btn>
+      <q-btn color="primary" @click="toolbar = true" round icon="mdi-plus" />
     </div>
     <br><br><br><br><br>
     <hr>
     <br>
-    <div class="flex" style="gap: 20px;">
+    PS:点击角色名可以打开操作页面
+    <div class="flex flex-center PClist" style="gap: 20px;">
       <ProfileCard v-for="key in profileList" :key="key.id" v-bind="key"></ProfileCard>
     </div>
   </q-page>
@@ -63,8 +64,8 @@ export default defineComponent({
     this.nickName = JSON.parse(sessionStorage.getItem("userInfomation")).nickName
   },
   methods: {
-    async createNewProfile() {
-      await api.put(this.$yggApi + "/server/profiles", {
+    createNewProfile() {
+      api.put(this.$yggApi + "/server/profiles", {
         name: this.new_name,
         offlineCompatible: this.offlineable
       }, {
@@ -72,7 +73,9 @@ export default defineComponent({
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
       }).then(
-        location.reload()
+        setTimeout(function () {
+          location.reload()
+        }, 1000)
       ).catch(
         (err) => {
           err = JSON.parse(err.request.response)
@@ -138,5 +141,9 @@ h1 {
 .yggHeader .q-btn {
   float: right;
   margin-top: 32px;
+}
+
+.PClist {
+  padding: 0 15px;
 }
 </style>

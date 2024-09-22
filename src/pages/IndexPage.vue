@@ -55,6 +55,9 @@
           背景图片来源：Pixiv 105774306_p0
         </div>
     </div>
+    <div class="LISTBTN" v-if="!$leftDrawer.stats.value">
+      <q-btn flat round icon="mdi-format-list-bulleted" @click="$leftDrawer.toggle()" style="color: white;"/>
+    </div>
   </q-page>
 </template>
 
@@ -165,5 +168,11 @@ h2 {
 }
 .authlib:hover{
   cursor: pointer;
+}
+.LISTBTN{
+  /* background-color: rgba(0, 0, 0, 0) !important; */
+  position: fixed;
+  left: 5px;
+  top: 5px;
 }
 </style>

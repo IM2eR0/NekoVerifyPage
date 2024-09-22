@@ -1,10 +1,10 @@
 <template>
   <q-layout view="hHh LpR fFf">
 
-    <q-header elevated class="bg-accent text-white" height-hint="0">
+    <q-header elevated class="bg-accent text-white" height-hint="0" :class="isinhome ? 'inhome' : ''" reveal :model-value="!isinhome || $leftDrawer.stats.value">
       <q-toolbar>
 
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <q-btn dense flat round icon="menu" @click="$leftDrawer.toggle()" />
 
         <q-toolbar-title>
           {{ webTitle }}
@@ -13,7 +13,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left" overlay behavior="desktop" elevated>
+    <q-drawer v-model="$leftDrawer.stats.value" side="left" overlay behavior="desktop" elevated>
 
       <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
 
@@ -35,6 +35,19 @@
   </q-layout>
 </template>
 
+<style scoped>
+.q-header{
+  transition: all .3s;
+}
+
+.inhome{
+  background-color: rgba(142, 202, 255, 0.6) !important;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  color: black !important;
+}
+</style>
+
 <script>
 import { api } from 'boot/axios'
 import { defineComponent, ref, inject } from 'vue'
@@ -48,6 +61,11 @@ export default defineComponent({
     EssentialLink
   },
   mounted() {
+
+    if(this.$route.path == "/home"){
+      this.isinhome = true
+    }
+
     if(!Cookies.get("accessToken")){
       Notify.create({
         type: 'negative',
@@ -144,12 +162,9 @@ export default defineComponent({
 
 
     return {
+      isinhome: ref(false),
       essentialLinks: linksList,
-      leftDrawerOpen,
       webTitle,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
     }
   },
   updated() {
@@ -167,6 +182,15 @@ export default defineComponent({
         message: '成功登出！',
         timeout: 1000
       })
+    }
+  },
+  watch: {
+    $route(to,from){
+      if(to.path == "/home"){
+        this.isinhome = true
+      }else{
+        this.isinhome = false
+      }
     }
   }
 })

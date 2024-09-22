@@ -1,42 +1,45 @@
 <template>
   <div class="profile-card">
     <div class="name">
-      {{ name }}
+      <center @click="showControl = true">{{ name }}</center>
     </div>
     <hr>
-    <div>
-      角色ID：{{ id }}
-    </div>
-    <div>
-      使用皮肤：
-      <img v-if="this.skinused" :src="this.skinused.url" />
-      <span v-else>
-        未上传皮肤
-      </span>
-    </div>
-    <br>
-    <br>
     <center>
-
-      <q-btn color="primary" @click="changename = true">
-        修改角色名
-      </q-btn>
-
-      &ensp;
-
-      <q-btn color="primary" @click="changeskin = true">
-        修改皮肤
-      </q-btn>
-
-      &ensp;
-
-      <q-btn color="red" @click="del = true">
-        删除角色
-      </q-btn>
-
+      <div>
+        <canvas ref="skin_container"></canvas>
+      </div>
     </center>
   </div>
+  <q-dialog v-model="showControl" persistent>
+    <q-card>
+      <q-bar>
+        <div>{{ name }} 的详细设置</div>
 
+        <q-space />
+
+        <q-btn dense flat icon="close" v-close-popup>
+          <q-tooltip>关闭</q-tooltip>
+        </q-btn>
+      </q-bar>
+
+      <q-card-section>
+        <center>
+          <q-btn color="primary" @click="changename = true">
+            修改角色名
+          </q-btn>
+          <br><br>
+          <q-btn color="primary" @click="changeskin = true">
+            修改皮肤
+          </q-btn>
+          <br><br>
+          <q-btn color="red" @click="del = true">
+            删除角色
+          </q-btn>
+        </center>
+      </q-card-section>
+
+    </q-card>
+  </q-dialog>
   <q-dialog v-model="del">
     <q-card>
       <q-card-section>
@@ -87,7 +90,7 @@
       <q-card-section class="qt-none">
         <q-tabs v-model="skinform" active-color="primary">
           <!-- 手动上传后端有防跨域处理，故只有前后端一体部署的时候方可使用 -->
-          <q-tab name="手动上传" v-if="$yggApi == hosts">手动上传</q-tab>
+          <q-tab name="手动上传" v-if="this.$yggApi == hosts">手动上传</q-tab>
           <q-tab name="正版">从正版账号</q-tab>
           <q-tab name="LS">从LittleSkin</q-tab>
           <q-tab name="DEL">删除皮肤</q-tab>
@@ -112,7 +115,9 @@
         <template v-if="skinform == 'LS'">
           <q-input label="LittleSkin材质ID" v-model="littleSkin"></q-input>
           <br>
-          <div>“材质id”指的是littleSkin皮肤站的材质页面url结尾的那串数字。例如：https://littleskin.cn/skinlib/show/2713，则其材质id为2713。需要材质公开可见；服务器会检查其材质类型。</div>
+          <div>
+            “材质id”指的是littleSkin皮肤站的材质页面url结尾的那串数字。例如：https://littleskin.cn/skinlib/show/2713，则其材质id为2713。需要材质公开可见；服务器会检查其材质类型。
+          </div>
           <br>
           <q-card-actions align="center">
             <q-btn flat label="确认" color="primary" v-close-popup @click="fromLS(id)" />
@@ -129,18 +134,18 @@
       </q-card-section>
     </q-card>
   </q-dialog>
-
 </template>
 
-<script>
+<script lang="ts">
 import { api } from 'src/boot/axios';
 import { defineComponent, ref } from 'vue';
-import { Cookies, Notify, Loading, QSpinnerGrid } from 'quasar';
+import { Cookies, Notify, Loading } from 'quasar';
 
 export default defineComponent({
   name: "ProfileCard",
   data() {
     return {
+      showControl: ref(false),
       hosts: window.location.protocol + '//' + window.location.host,
       del: ref(false),
       changename: ref(false),
@@ -224,9 +229,9 @@ export default defineComponent({
         }
       )
     },
-    uploadskin(id){
+    uploadskin(id) {
       // console.log(this.skinfile)
-      api.put(this.$yggApi + "/server/profile/" + id +"/skin",this.skinfile,{
+      api.put(this.$yggApi + "/server/profile/" + id + "/skin", this.skinfile, {
         headers: {
           "Content-Type": this.skinfile.type,
           "x-skin-model": this.skintype,
@@ -245,9 +250,8 @@ export default defineComponent({
         }
       )
     },
-    fromMojang(id){
+    fromMojang(id) {
       Loading.show({
-        spinner: QSpinnerGrid,
         message: '正在与服务器通信，请稍后...',
       })
       api.patch(this.$yggApi + "/server/profile/" + id, {
@@ -271,9 +275,8 @@ export default defineComponent({
         }
       )
     },
-    fromLS(id){
+    fromLS(id) {
       Loading.show({
-        spinner: QSpinnerGrid,
         message: '正在与服务器通信，请稍后...',
       })
       api.patch(this.$yggApi + "/server/profile/" + id, {
@@ -297,19 +300,18 @@ export default defineComponent({
         }
       )
     },
-    delSkin(id){
+    delSkin(id) {
       Loading.show({
-        spinner: QSpinnerGrid,
         message: '正在与服务器通信，请稍后...',
       })
       let stype
-      if(this.skindel == "皮肤"){
+      if (this.skindel == "皮肤") {
         stype = "skin"
       }
-      if(this.skindel == "披风"){
+      if (this.skindel == "披风") {
         stype = "cape"
       }
-      if(this.skindel == "全部"){
+      if (this.skindel == "全部") {
         stype = "all"
       }
       api.patch(this.$yggApi + "/server/profile/" + id, {
@@ -330,18 +332,28 @@ export default defineComponent({
       }).then(
         () => {
           setTimeout(
-            ()=>{
+            () => {
               location.reload()
-            },1000
+            }, 1000
           )
         }
       )
     }
   },
   mounted() {
-    if (Object.keys(this.textinfo.textures).length != 0) {
-      this.skinused = this.textinfo.textures.SKIN
-    }
+    let skinViewer = new skinview3d.SkinViewer({
+      canvas: this.$refs["skin_container"],
+      width: 150,
+      height: 250,
+    })
+
+    api.get(this.$yggApi + "/server/profile/" + this.id).then(
+      (res) => {
+        var infomation = res.data
+        var skinUrl = JSON.parse(window.atob(infomation.properties[0].value)).textures.SKIN.url ? JSON.parse(window.atob(infomation.properties[0].value)).textures.SKIN.url : ""
+        skinViewer.loadSkin(skinUrl)
+      }
+    )
   }
 });
 </script>
@@ -352,10 +364,17 @@ export default defineComponent({
   padding: 15px;
   border-radius: 15px;
   width: 340px;
-  height: 260px;
+  height: 340px;
+  transition: all .3s;
 }
 
 .profile-card .name {
   font-size: 20px;
+}
+
+.profile-card:hover {
+  scale: 1.1;
+  background-color: rgb(243, 243, 243);
+  cursor: pointer;
 }
 </style>
