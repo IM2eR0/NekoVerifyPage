@@ -35,7 +35,11 @@
       </center>
       <br>
       <!-- <q-btn label="获取救援代码" color="primary" @click="getCode" /> -->
-      因为太危险了所以没做 :p，或许以后会出现呢？
+      <!-- 因为太危险了所以没做 :p，或许以后会出现呢？ -->
+      <btngroup>
+        <q-btn label="刷新令牌" color="primary" @click="refreshValidate = true" />
+      </btngroup>
+
     </div>
 
     <div v-if="role == 'admin'">
@@ -104,6 +108,26 @@
       </q-card-section>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="refreshValidate" persistent transition-show="flip-down" transition-hide="flip-up">
+    <q-card>
+      <q-toolbar>
+        <q-toolbar-title>刷新令牌</q-toolbar-title>
+
+        <q-btn flat round dense icon="close" v-close-popup />
+      </q-toolbar>
+
+      <q-card-section>
+        <div>刷新令牌会吊销原先的令牌与UUID，并重新生成一个，使用此功能后会导致客户端要求重新输入密码。<br>如果您已知悉，请点击确认按钮。</div>
+      </q-card-section>
+
+      <q-card-actions align="right" class="text-primary">
+        <q-btn flat label="取消" v-close-popup color="red" />
+        <q-btn flat label="确认" v-close-popup @click="refreshKey" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
 </template>
 
 <script>
@@ -121,7 +145,8 @@ export default defineComponent({
       npwd: ref(""),
       invcodeNum: ref(1),
       invA: ref(false),
-      invList: {}
+      invList: {},
+      refreshValidate: ref(false)
     }
   },
   methods: {
@@ -183,8 +208,8 @@ export default defineComponent({
         }
       )
     },
-    getInviteCode(){
-      api.get(this.$yggApi + "/server/inviteCodes?count=" + this.invcodeNum,{
+    getInviteCode() {
+      api.get(this.$yggApi + "/server/inviteCodes?count=" + this.invcodeNum, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
@@ -192,6 +217,29 @@ export default defineComponent({
         (res) => {
           this.invList = res.data
           this.invA = true
+        }
+      )
+    },
+    refreshKey() {
+      api.post(this.$yggApi + "/server/sessions", {
+        accessToken: Cookies.get("accessToken")
+      }).then(
+        () => {
+          Notify.create({
+            type: 'positive',
+            message: "刷新成功！请重新登录！",
+            timeout: 3000
+          })
+          Cookies.remove("accessToken")
+          Cookies.remove("uuid")
+          this.$router.push("/login")
+        }
+      ).catch(
+        () => {
+          Notify.create({
+            type: 'negative',
+            message: "出现不明错误！",
+          })
         }
       )
     }
