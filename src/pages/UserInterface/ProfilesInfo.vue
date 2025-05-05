@@ -28,7 +28,6 @@ export default {
     getInfomation() {
       api.get(this.$yggApi + "/server/profile/" + this.$route.query.id).then(
         (res) => {
-          console.log(res);
           Loading.hide()
         }
       ).catch(

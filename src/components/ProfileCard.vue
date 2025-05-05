@@ -89,17 +89,16 @@
 
       <q-card-section class="qt-none">
         <q-tabs v-model="skinform" active-color="primary">
-          <!-- 手动上传后端有防跨域处理，故只有前后端一体部署的时候方可使用 -->
-          <q-tab name="手动上传" v-if="this.$yggApi == hosts">手动上传</q-tab>
+          <!-- 手动上传因新版API文档不清晰，暂时无法使用 -->
+          <!-- <q-tab name="手动上传">手动上传</q-tab> -->
           <q-tab name="正版">从正版账号</q-tab>
           <q-tab name="LS">从LittleSkin</q-tab>
           <q-tab name="DEL">删除皮肤</q-tab>
         </q-tabs>
         <br>
-        <!-- {{ skinform }} -->
         <template v-if="skinform == '手动上传'">
           <q-select outlined v-model="skintype" :options="skintypeopti" label="材质类型" />
-          <q-file v-model="skinfile" label="点击上传文件" accept=".png" />
+          <q-file v-model="skinfile" label="点击上传文件" accept=".png" max-file-size="5120" hint="仅支持png文件，大小需要控制在5kb以内" />
 
           <q-card-actions align="center">
             <q-btn flat label="确认" color="primary" v-close-popup @click="uploadskin(id)" />
@@ -128,8 +127,13 @@
           <q-select outlined v-model="skindel" :options="skindelopt" label="材质类型" />
 
           <q-card-actions align="center">
-            <q-btn flat label="确认" color="primary" v-close-popup @click="delSkin(id)" />
+            <q-btn flat label="确认" color="primary" v-close-popup @click="delSkin(id)" disable/>
           </q-card-actions>
+          <div style="color: red">
+            <center>
+              该功能暂不可用：后端异常。
+            </center>
+          </div>
         </template>
       </q-card-section>
     </q-card>
@@ -184,7 +188,7 @@ export default defineComponent({
   },
   methods: {
     delprofile(id) {
-      api.delete(this.$yggApi + "/server/profile/" + id, {
+      api.delete(this.$yggApi + "/server/profiles/" + id, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
@@ -201,17 +205,8 @@ export default defineComponent({
           message: "请输入有效的用户名！",
         })
       }
-      api.patch(this.$yggApi + "/server/profile/" + id, {
-        name: this.newname,
-        texture: {
-          type: "none",
-          data: {
-            capeVisible: true,
-            littleskinTid: "",
-            profileName: "",
-            type: "skin"
-          }
-        }
+      api.patch(this.$yggApi + "/server/profiles/" + id, {
+        name: this.newname
       }, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
@@ -230,10 +225,9 @@ export default defineComponent({
       )
     },
     uploadskin(id) {
-      // console.log(this.skinfile)
-      api.put(this.$yggApi + "/server/profile/" + id + "/skin", this.skinfile, {
+      api.put(this.$yggApi + "/server/profiles/" + id + "/textures/skin", this.skinfile, {
         headers: {
-          "Content-Type": this.skinfile.type,
+          "Content-Type": "image/png",
           "x-skin-model": this.skintype,
           "Authorization": "Bearer " + Cookies.get("accessToken")
         }
@@ -242,7 +236,7 @@ export default defineComponent({
           location.reload()
         }
       ).catch(
-        () => {
+        (err) => {
           Notify.create({
             type: 'negative',
             message: "上传失败，请联系网站管理员",
@@ -254,17 +248,8 @@ export default defineComponent({
       Loading.show({
         message: '正在与服务器通信，请稍后...',
       })
-      api.patch(this.$yggApi + "/server/profile/" + id, {
-        name: "",
-        texture: {
-          type: "mojang",
-          data: {
-            capeVisible: true,
-            littleskinTid: "",
-            profileName: this.mojang,
-            type: "skin"
-          }
-        }
+      api.patch(this.$yggApi + "/server/profiles/" + id + "/textures?operation=copyFromOfficial", {
+        profileName: this.mojang
       }, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
@@ -279,17 +264,8 @@ export default defineComponent({
       Loading.show({
         message: '正在与服务器通信，请稍后...',
       })
-      api.patch(this.$yggApi + "/server/profile/" + id, {
-        name: "",
-        texture: {
-          type: "littleskin",
-          data: {
-            capeVisible: true,
-            littleskinTid: this.littleSkin,
-            profileName: "",
-            type: "skin"
-          }
-        }
+      api.patch(this.$yggApi + "/server/profiles/" + id + "/textures?operation=importFromLittleskin", {
+        littleskinTid: this.littleSkin
       }, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
@@ -314,18 +290,8 @@ export default defineComponent({
       if (this.skindel == "全部") {
         stype = "all"
       }
-      api.patch(this.$yggApi + "/server/profile/" + id, {
-        name: "",
-        texture: {
-          type: "delete",
-          data: {
-            capeVisible: true,
-            littleskinTid: "",
-            profileName: "",
-            type: stype
-          }
-        }
-      }, {
+      console.log(Cookies.get("accessToken"))
+      api.delete(this.$yggApi + "/server/profiles/" + id + "/textures/" + stype, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
@@ -347,11 +313,12 @@ export default defineComponent({
       height: 250,
     })
 
-    api.get(this.$yggApi + "/server/profile/" + this.id).then(
+    api.get(this.$yggApi + "/server/profiles/" + this.id).then(
       (res) => {
         var infomation = res.data
         var skinUrl = JSON.parse(window.atob(infomation.properties[0].value)).textures.SKIN.url ? JSON.parse(window.atob(infomation.properties[0].value)).textures.SKIN.url : ""
         skinViewer.loadSkin(skinUrl)
+
       }
     )
   }

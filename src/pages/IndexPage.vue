@@ -44,12 +44,13 @@
         <br>
         <br>
 
-        <div>
-          <b>{{ $pageVersion }}</b> &ensp; Made by 昵称违规喵
+        <div class="githubs">
+          <b><a target="_blank"
+            href="https://github.com/IM2eR0/NekoVerifyPage">{{ $pageVersion }}</a></b> &ensp; Made by NekoGan
         </div>
-        <div>
-          GitHub地址：<a target="_blank"
-            href="https://github.com/IM2eR0/NekoVerifyPage">https://github.com/IM2eR0/NekoVerifyPage</a>
+        <div class="githubs">
+          <b><a target="_blank"
+            href="https://github.com/yige233/nodeYggdrasil">{{ $yggdrasilVersion }}</a></b> &ensp; Made by yige233
         </div>
         <div>
           背景图片来源：Pixiv 105774306_p0
@@ -174,5 +175,9 @@ h2 {
   position: fixed;
   left: 5px;
   top: 5px;
+}
+.githubs a{
+  color: blueviolet;
+  text-decoration: none;
 }
 </style>

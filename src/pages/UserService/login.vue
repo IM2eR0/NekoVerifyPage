@@ -56,7 +56,7 @@ export default defineComponent({
       })
 
 
-      api.put(this.$yggApi + "/server/sessions", {
+      api.post(this.$yggApi + "/server/sessions", {
         username: this.userName,
         password: this.password
       }).then(
@@ -68,7 +68,7 @@ export default defineComponent({
             message: '登录成功！',
             timeout: 1000
           });
-          api.get(this.$yggApi + "/server/user/" + Cookies.get("uuid"), {
+          api.get(this.$yggApi + "/server/users/" + Cookies.get("uuid"), {
             headers: {
               Authorization: "Bearer " + Cookies.get("accessToken")
             }
@@ -85,7 +85,7 @@ export default defineComponent({
         (error) => {
           notif({
             type: 'negative',
-            message: '登录失败：用户名或密码错误',
+            message: '登录失败：' + error.response.data.errorMessage,
             timeout: 1000
           })
         }

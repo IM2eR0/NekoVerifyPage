@@ -19,9 +19,7 @@
       <h2>修改密码</h2>
       <hr><br>
       <div>
-        <!-- <q-input label="旧密码" v-model="opwd" type="password" /> -->
         <q-input label="新密码" v-model="npwd" />
-        <!-- <q-input label="再次输入一次新密码" v-model="npwda" type="password" /> -->
       </div>
       <br>
       <q-btn label="提交" color="primary" @click="changePwd" />
@@ -34,28 +32,15 @@
         下面的操作十分危险，会导致账户永久消失（包括角色），或是永久性地无法修改任何账户相关内容。
       </center>
       <br>
-      <!-- <q-btn label="获取救援代码" color="primary" @click="getCode" /> -->
-      <!-- 因为太危险了所以没做 :p，或许以后会出现呢？ -->
       <btngroup>
         <q-btn label="刷新令牌" color="primary" @click="refreshValidate = true" />
+        &ensp;
+        <q-btn label="删除用户" color="red" @click="deleteAccValidate = true" />
       </btngroup>
 
     </div>
 
     <div v-if="role == 'admin'">
-
-      <!-- <div class="subsetting">
-        <h2>管理员：封禁用户</h2>
-        <hr><br>
-        <div>
-          多次封禁时长不叠加。将封禁时长设为0，即可视为解封用户。封禁会强制注销该用户的所有会话。被封禁期间，无法登录、无法删除用户，也不能使用该用户的邀请码注册新用户。
-        </div>
-        <br>
-        <q-input label="用户UUID、角色UUID或角色名称" v-model="npwd" />
-        <q-input label="封禁时长(min)" v-model="npwd" />
-
-      </div> -->
-
       <div class="subsetting">
         <h2>管理员：批量获取临时邀请码</h2>
         <hr><br>
@@ -73,6 +58,27 @@
     </div>
 
   </q-page>
+
+  <q-dialog v-model="deleteAccValidate" persistent transition-show="flip-down" transition-hide="flip-up">
+    <q-card>
+      <q-toolbar>
+        <q-toolbar-title>删除账户</q-toolbar-title>
+      </q-toolbar>
+
+      <q-card-section>
+        <b>注意：</b><span style="color:red">这会使你永久失去该账号，包括账号内的角色、皮肤等，如果你执意要这么做，请在下方输入你的用户名与密码</span>
+        <br>
+        <q-input v-model="userName" label="邮箱" type="email" />
+        <br>
+        <q-input v-model="password" label="密码" type="password" />
+      </q-card-section>
+
+      <q-card-actions align="right" class="text-primary">
+        <q-btn flat label="取消" v-close-popup color="red" />
+        <q-btn flat label="确认" v-close-popup @click="deleteAcc" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 
   <q-dialog v-model="recCode" persistent transition-show="flip-down" transition-hide="flip-up">
     <q-card>
@@ -146,28 +152,30 @@ export default defineComponent({
       invcodeNum: ref(1),
       invA: ref(false),
       invList: {},
-      refreshValidate: ref(false)
+      refreshValidate: ref(false),
+      deleteAccValidate: ref(false),
+      userName: ref(),
+      password: ref()
     }
   },
   methods: {
     getCode() {
       // this.recCode = true
-      api.get(this.$yggApi + "/server/user/" + Cookies.get("uuid") + "/rescueCode", {
+      api.get(this.$yggApi + "/server/users/" + Cookies.get("uuid") + "/rescue-code", {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
       }).then(
         (res) => {
           res = res.data
-          // console.log(res);
           this.recCode = true;
           this.rescueCode = res.rescueCode
         }
       ).catch(
-        () => {
+        (e) => {
           Notify.create({
             type: 'negative',
-            message: "你已经有一个救援代码了！在使用之前无法获取新的救援代码！",
+            message: e.response.data.errorMessage,
           })
           Notify.create({
             type: 'info',
@@ -177,13 +185,8 @@ export default defineComponent({
       )
     },
     changePwd() {
-      api.patch(this.$yggApi + "/server/user/" + Cookies.get("uuid"), {
-        data: {
-          nickName: "",
-          password: this.npwd,
-          username: ""
-        },
-        operation: "modify"
+      api.patch(this.$yggApi + "/server/users/" + Cookies.get("uuid"), {
+        password: this.npwd
       }, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
@@ -200,10 +203,10 @@ export default defineComponent({
           this.$router.push("/login")
         }
       ).catch(
-        () => {
+        (e) => {
           Notify.create({
             type: 'negative',
-            message: "修改失败：新旧密码不能相同！",
+            message: "修改失败：" + e.response.data.errorMessage,
           })
         }
       )
@@ -221,7 +224,7 @@ export default defineComponent({
       )
     },
     refreshKey() {
-      api.post(this.$yggApi + "/server/sessions", {
+      api.patch(this.$yggApi + "/server/sessions", {
         accessToken: Cookies.get("accessToken")
       }).then(
         () => {
@@ -235,10 +238,36 @@ export default defineComponent({
           this.$router.push("/login")
         }
       ).catch(
-        () => {
+        (e) => {
           Notify.create({
             type: 'negative',
-            message: "出现不明错误！",
+            message: "刷新失败：" + e.response.data.errorMessage,
+          })
+        }
+      )
+    },
+    deleteAcc() {
+      api.delete(this.$yggApi + "/server/users/" + Cookies.get("uuid"), {
+          data: {
+            username: this.userName,
+            password: this.password
+          }
+      }).then(
+        ()=>{
+          Notify.create({
+            type: 'positive',
+            message: "再见！我们期待与你的再次相遇~",
+            timeout: 3000
+          })
+          Cookies.remove("accessToken")
+          Cookies.remove("uuid")
+          this.$router.push("/login")
+        }
+      ).catch(
+        (e) => {
+          Notify.create({
+            type: 'negative',
+            message: "删除失败：" + e.response.data.errorMessage,
           })
         }
       )

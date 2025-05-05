@@ -92,7 +92,7 @@ export default defineComponent({
       })
 
 
-      api.put(this.$yggApi + "/server/users", [
+      api.post(this.$yggApi + "/server/users", [
         {
           username: this.email,
           password: this.password,
@@ -101,7 +101,6 @@ export default defineComponent({
         }
       ]).then(
         (res) => {
-          console.log(res.data)
           if(res.data[0].error){
             return notif({
               type: 'negative',

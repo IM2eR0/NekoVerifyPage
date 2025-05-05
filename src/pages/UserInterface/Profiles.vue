@@ -3,14 +3,18 @@
     <div class="yggHeader">
       <h1>
         {{ nickName }} 的 角色列表
+        <h6>角色上限：{{ profilesNum }} / {{ maxProfile }}</h6>
       </h1>
       <!-- <div>testbtn</div> -->
       <q-btn color="primary" @click="toolbar = true" round icon="mdi-plus" />
     </div>
-    <br><br><br><br><br>
+    <br><br><br><br>
     <hr>
     <br>
     PS:点击角色名可以打开操作页面
+    <br>
+    <br>
+    <br>
     <div class="flex flex-center PClist" style="gap: 20px;">
       <ProfileCard v-for="key in profileList" :key="key.id" v-bind="key"></ProfileCard>
     </div>
@@ -56,7 +60,9 @@ export default defineComponent({
       profileList: [],
       toolbar: ref(false),
       new_name: ref(""),
-      offlineable: ref(true)
+      offlineable: ref(true),
+      profilesNum: ref(0),
+      maxProfile: ref(0)
     }
   },
   mounted() {
@@ -65,7 +71,7 @@ export default defineComponent({
   },
   methods: {
     createNewProfile() {
-      api.put(this.$yggApi + "/server/profiles", {
+      api.post(this.$yggApi + "/server/profiles", {
         name: this.new_name,
         offlineCompatible: this.offlineable
       }, {
@@ -92,15 +98,17 @@ export default defineComponent({
         message: '正在加载数据，请稍后...',
       })
       this.profileList = []
-      api.get(this.$yggApi + "/server/user/" + Cookies.get("uuid"), {
+      api.get(this.$yggApi + "/server/users/" + Cookies.get("uuid"), {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
       }).then(
         (res) => {
           res = res.data
+          this.profilesNum = res.profiles.length
+          this.maxProfile = res.maxProfileCount
           res.profiles.forEach(element => {
-            api.get(this.$yggApi + "/server/profile/" + element).then(
+            api.get(this.$yggApi + "/server/profiles/" + element).then(
               (res) => {
                 res = res["data"]
                 this.profileList.push({
@@ -131,7 +139,14 @@ export default defineComponent({
 h1 {
   font-size: 32px;
   margin: 0;
+  margin-top: 15px;
   padding: 0;
+  line-height: 0;
+}
+h6{
+  margin: 0;
+  padding: 0;
+  line-height: 6rem;
 }
 
 .yggHeader h1 {

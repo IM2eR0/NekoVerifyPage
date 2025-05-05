@@ -88,13 +88,11 @@ export default defineComponent({
       return
     }
 
-    api.post(this.$yggApi+"/server/sessions", {
-      accessToken: Cookies.get("accessToken"),
-      requestUser: true
+    api.patch(this.$yggApi+"/server/sessions", {
+      accessToken: Cookies.get("accessToken")
     }).then(
       (res) => {
         Cookies.set("accessToken", res["data"]["accessToken"])
-        Cookies.set("uuid", res["data"]["uuid"])
       }
     ).catch((error) => {
       Notify.create({
@@ -130,7 +128,7 @@ export default defineComponent({
         webTitle.value = res['data']["server"]['name'] + " - 管理面板"
       }
     )
-    api.get($yggApi + "/server/user/" + Cookies.get("uuid"), {
+    api.get($yggApi + "/server/users/" + Cookies.get("uuid"), {
       headers: {
         Authorization: "Bearer " + Cookies.get("accessToken")
       }

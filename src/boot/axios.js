@@ -2,8 +2,20 @@
 
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
+import qs from 'qs'
 
 const api = axios.create({ baseURL: 'https://api.example.com' })
+axios.interceptors.request.use(
+	config => {
+		if (config.method === 'post') {
+			config.data = qs.stringify(config.data)
+		}
+		return config
+	},
+	error => {
+		Promise.reject(error)
+	}
+)
 
 export default boot(({ app }) => {
   // 通过this.$axios和this.$API在Vue文件（Options API）内使用
