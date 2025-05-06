@@ -100,11 +100,8 @@
           <q-file v-model="skinfile" label="点击上传文件" accept=".png" max-file-size="5120" hint="仅支持png文件，大小需要控制在5kb以内" />
 
           <q-card-actions align="center">
-            <q-btn flat label="确认" color="primary" v-close-popup @click="uploadskin(id)" disabled />
+            <q-btn flat label="确认" color="primary" v-close-popup @click="uploadskin(id)" />
           </q-card-actions>
-          <center style="color: red">
-            无法使用：后端异常
-          </center>
         </template>
         <template v-if="skinform == '正版'">
           <q-input label="正版账户用户名" v-model="mojang"></q-input>

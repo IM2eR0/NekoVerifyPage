@@ -4,7 +4,7 @@
       <q-page class="flex flex-center">
         <div class="mainbox">
           <center>
-            <h1>Register</h1>
+            <h1>用户注册</h1>
           </center>
           <q-form @submit="onSubmit" class="center">
 

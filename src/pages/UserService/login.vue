@@ -4,7 +4,7 @@
       <q-page class="flex flex-center">
         <div class="mainbox">
           <center>
-            <h1>Login</h1>
+            <h1>用户登录</h1>
           </center>
           <q-form @submit="onSubmit" class="center">
             <q-input v-model="userName" label="邮箱" type="email" />
@@ -24,10 +24,40 @@
               {{ $pageVersion }}
             </center>
           </div>
+          <div>
+            <center>
+              <a href="#/login" @click="forgetPwdDialog = true">忘记密码？</a>
+            </center>
+          </div>
         </div>
       </q-page>
     </q-page-container>
   </q-layout>
+
+  <q-dialog v-model="forgetPwdDialog" persistent transition-show="flip-down" transition-hide="flip-up">
+    <q-card>
+      <q-toolbar>
+        <q-toolbar-title>忘记密码</q-toolbar-title>
+
+        <q-btn flat round dense icon="close" v-close-popup />
+      </q-toolbar>
+
+      <q-card-section>
+        <q-input label="UUID" v-model="uuid"></q-input>
+        <br>
+        <q-input label="新密码" v-model="newpwd"></q-input>
+        <br>
+        <q-input label="救援代码" v-model="resCode"></q-input>
+        <br>
+        <div>Tips：若忘记UUID或救援代码，请联系管理员获取。</div>
+      </q-card-section>
+
+      <q-card-actions align="right" class="text-primary">
+        <q-btn flat label="取消" v-close-popup color="red" />
+        <q-btn flat label="确认" v-close-popup @click="forgetPwd" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
@@ -45,7 +75,11 @@ export default defineComponent({
   setup() {
     return {
       userName: ref(""),
-      password: ref("")
+      password: ref(""),
+      forgetPwdDialog: ref(false),
+      uuid: ref(""),
+      newpwd: ref(""),
+      resCode: ref(""),
     }
   },
   methods: {
@@ -82,6 +116,24 @@ export default defineComponent({
           )
         }
       ).catch(
+        () => { }
+      )
+    },
+    forgetPwd() {
+      api.patch("/server/users/" + this.uuid + "/password", {
+        rescueCode: this.resCode,
+        newPassword: this.newpwd
+      }).then(
+        (res) => {
+          if(res){
+            Notify.create({
+              type: 'positive',
+              message: '密码修改成功！',
+              timeout: 1000
+            })
+          }
+        }
+      ).catch(
         () => {}
       )
     }
@@ -116,5 +168,11 @@ h1 {
   margin: 0;
   padding: 0;
   margin-top: 20px;
+}
+
+a {
+  color: blue;
+  text-decoration: none;
+  transition: color .3s;
 }
 </style>
