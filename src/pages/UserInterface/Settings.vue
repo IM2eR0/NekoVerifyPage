@@ -26,6 +26,16 @@
     </div>
 
     <div class="subsetting">
+      <h2>生成一个邀请码</h2>
+      <hr><br>
+      <div>
+        生成一个邀请码，用于邀请用户注册，需要服务器允许。
+      </div>
+      <br>
+      <q-btn label="生成邀请码" color="primary" @click="getinviteCode" />
+    </div>
+
+    <div class="subsetting">
       <h2>⚠️高危地带⚠️</h2>
       <hr><br>
       <center style="color: red;">
@@ -39,24 +49,6 @@
       </btngroup>
 
     </div>
-
-    <div v-if="role == 'admin'">
-      <div class="subsetting">
-        <h2>管理员：批量获取临时邀请码</h2>
-        <hr><br>
-        <div>
-          临时邀请码拥有30分钟有效期，用后即失效。请按需获取。
-        </div>
-        <br>
-
-        <q-input v-model="invcodeNum" label="要获取的邀请码数量" type="number" />
-        <br>
-        <q-btn label="获取" color="primary" @click="getInviteCode" />
-
-      </div>
-
-    </div>
-
   </q-page>
 
   <q-dialog v-model="deleteAccValidate" persistent transition-show="flip-down" transition-hide="flip-up">
@@ -98,19 +90,14 @@
   <q-dialog v-model="invA" persistent transition-show="flip-down" transition-hide="flip-up">
     <q-card>
       <q-toolbar>
-        <q-toolbar-title>邀请码列表</q-toolbar-title>
+        <q-toolbar-title>邀请码</q-toolbar-title>
 
         <q-btn flat round dense icon="close" v-close-popup />
       </q-toolbar>
 
       <q-card-section>
-        <b>注意：</b>邀请码将在半小时后过期！
-        <br>
-        <br>
-        <!-- <h1>{{ rescueCode }}</h1> -->
-        <div v-for="key in invList" :key="key">
-          {{ key }}
-        </div>
+        <b>注意：</b>本代码只会显示一次！
+        <h1>{{ invCode }}</h1>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -145,13 +132,12 @@ export default defineComponent({
   data() {
     return {
       nickName: JSON.parse(sessionStorage.getItem("userInfomation")).nickName,
-      role: JSON.parse(sessionStorage.getItem("userInfomation")).role,
       recCode: ref(false),
       rescueCode: "",
       npwd: ref(""),
       invcodeNum: ref(1),
       invA: ref(false),
-      invList: {},
+      invCode: "",
       refreshValidate: ref(false),
       deleteAccValidate: ref(false),
       userName: ref(),
@@ -159,9 +145,28 @@ export default defineComponent({
     }
   },
   methods: {
+    getinviteCode(){
+      api.get("/server/users/" + Cookies.get("uuid") + "/invite-code", {
+        headers: {
+          Authorization: "Bearer " + Cookies.get("accessToken")
+        }
+      }).then(
+        (res) => {
+          res = res.data
+          this.invCode = res.inviteCode
+          this.invA = true
+        }
+      ).catch(
+        () => {
+          Notify.create({
+            type: 'info',
+            message: "你可能已经拥有一个邀请码了，若需更多，请联系网站管理员",
+          })
+        }
+      )
+    },
     getCode() {
-      // this.recCode = true
-      api.get(this.$yggApi + "/server/users/" + Cookies.get("uuid") + "/rescue-code", {
+      api.get("/server/users/" + Cookies.get("uuid") + "/rescue-code", {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")
         }
@@ -174,10 +179,6 @@ export default defineComponent({
       ).catch(
         (e) => {
           Notify.create({
-            type: 'negative',
-            message: e.response.data.errorMessage,
-          })
-          Notify.create({
             type: 'info',
             message: "忘记救援代码？请联系网站管理员",
           })
@@ -185,7 +186,7 @@ export default defineComponent({
       )
     },
     changePwd() {
-      api.patch(this.$yggApi + "/server/users/" + Cookies.get("uuid"), {
+      api.patch("/server/users/" + Cookies.get("uuid"), {
         password: this.npwd
       }, {
         headers: {
@@ -203,28 +204,11 @@ export default defineComponent({
           this.$router.push("/login")
         }
       ).catch(
-        (e) => {
-          Notify.create({
-            type: 'negative',
-            message: "修改失败：" + e.response.data.errorMessage,
-          })
-        }
-      )
-    },
-    getInviteCode() {
-      api.get(this.$yggApi + "/server/inviteCodes?count=" + this.invcodeNum, {
-        headers: {
-          Authorization: "Bearer " + Cookies.get("accessToken")
-        }
-      }).then(
-        (res) => {
-          this.invList = res.data
-          this.invA = true
-        }
+        () => {}
       )
     },
     refreshKey() {
-      api.patch(this.$yggApi + "/server/sessions", {
+      api.patch("/server/sessions", {
         accessToken: Cookies.get("accessToken")
       }).then(
         () => {
@@ -238,12 +222,7 @@ export default defineComponent({
           this.$router.push("/login")
         }
       ).catch(
-        (e) => {
-          Notify.create({
-            type: 'negative',
-            message: "刷新失败：" + e.response.data.errorMessage,
-          })
-        }
+        () => {}
       )
     },
     deleteAcc() {

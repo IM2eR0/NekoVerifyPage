@@ -82,13 +82,7 @@ export default defineComponent({
           )
         }
       ).catch(
-        (error) => {
-          notif({
-            type: 'negative',
-            message: '登录失败：' + error.response.data.errorMessage,
-            timeout: 1000
-          })
-        }
+        () => {}
       )
     }
   }

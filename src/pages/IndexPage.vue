@@ -35,10 +35,13 @@
         <!-- <q-btn draggable="true" style="background-color: white;" type="a" :href="yggUrl">
           将此按钮拖至启动器
         </q-btn> -->
-        <a class="q-btn authlib" draggable="true" style="background-color: white;" :href="'authlib-injector:yggdrasil-server:'+yggUrl">
+        <a class="q-btn authlib" draggable="true" style="background-color: white;" :href="'authlib-injector:yggdrasil-server:'+yggUrl" :data-clipboard-text="yggUrl">
           <div>
             将我拖至启动器
           </div>
+          <q-tooltip>
+            目前因各个启动器已修改快速配置的功能，暂不可用
+          </q-tooltip>
         </a>
 
         <br>
@@ -46,11 +49,11 @@
 
         <div class="githubs">
           <b><a target="_blank"
-            href="https://github.com/IM2eR0/NekoVerifyPage">{{ $pageVersion }}</a></b> &ensp; Made by NekoGan
+            href="https://github.com/IM2eR0/NekoVerifyPage">{{ $pageVersion }}</a></b>
         </div>
         <div class="githubs">
           <b><a target="_blank"
-            href="https://github.com/yige233/nodeYggdrasil">{{ $yggdrasilVersion }}</a></b> &ensp; Made by yige233
+            href="https://github.com/yige233/nodeYggdrasil">{{ $yggdrasilVersion }}</a></b>
         </div>
         <div>
           背景图片来源：Pixiv 105774306_p0
@@ -64,17 +67,10 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { Loading, QSpinnerGrid } from 'quasar';
 import { api } from 'src/boot/axios';
 
 export default defineComponent({
   name: 'IndexPage',
-  setup() {
-    Loading.show({
-      spinner: QSpinnerGrid,
-      message: '正在加载数据，请稍后...',
-    })
-  },
   data() {
     return {
       userInfomation: [],
@@ -104,12 +100,9 @@ export default defineComponent({
       (res) => {
         res = res.data
         this.hitokoto = "『" + res.hitokoto + "』" + "——" + (res.from_who || "") + "「" + res.from + "」"
-        Loading.hide()
       }
     ).catch(
-      () => {
-        Loading.hide()
-      }
+      () => {}
     )
 
     if (this.userInfomation.regIP == "::1" || this.userInfomation.regIP == "127.0.0.1") {
@@ -129,6 +122,7 @@ export default defineComponent({
   margin: 0;
   padding: 0;
   background-image: url("../assets/105774306_p0.jpg");
+  background-size: cover;
 }
 
 .mainbox {
@@ -176,8 +170,14 @@ h2 {
   left: 5px;
   top: 5px;
 }
+
 .githubs a{
-  color: blueviolet;
+  color:orange;
   text-decoration: none;
+  transition: color .3s;
+}
+
+.mainbox:hover .githubs a{
+  color: rgb(57, 0, 201);
 }
 </style>

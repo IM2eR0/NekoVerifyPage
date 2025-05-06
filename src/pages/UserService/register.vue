@@ -49,7 +49,7 @@ export default defineComponent({
       password: ref(""),
       password2: ref(""),
       email: ref(""),
-      invitecode: "1gf5xfe"
+      invitecode: ref("")
     }
   },
   methods: {
@@ -101,28 +101,26 @@ export default defineComponent({
         }
       ]).then(
         (res) => {
-          if(res.data[0].error){
-            return notif({
-              type: 'negative',
-              message: '注册失败：' + res.data[0].errorMessage,
-              timeout: 3000
-            })
-          }
-          Cookies.set("accessToken", res["data"]["accessToken"])
+          Cookies.set("accessToken", res["data"]["id"])
           notif({
             type: 'positive',
             message: '注册成功！',
             timeout: 1000
           })
-          // this.$router.push('/')
+          api.post(this.$yggApi + "/server/sessions", {
+            username: this.email,
+            password: this.password
+          }).then(
+            () => {
+              this.$router.push("/")
+            }
+          )
         }
       ).catch(
-        (error) => {
-          error = error.response.data
+        () => {
           notif({
             type: 'negative',
-            message: '注册失败：' + error.errorMessage,
-            timeout: 1000
+            message: '注册失败'
           })
         }
       )

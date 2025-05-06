@@ -47,7 +47,7 @@
 import { api } from 'src/boot/axios';
 import { defineComponent, ref } from 'vue'
 import ProfileCard from 'src/components/ProfileCard.vue';
-import { Cookies, Notify, Loading, QSpinnerGrid } from 'quasar';
+import { Cookies, Notify } from 'quasar';
 
 export default defineComponent({
   name: "UserProfiles",
@@ -83,20 +83,10 @@ export default defineComponent({
           location.reload()
         }, 1000)
       ).catch(
-        (err) => {
-          err = JSON.parse(err.request.response)
-          Notify.create({
-            type: 'negative',
-            message: err.errorMessage || "未知错误",
-          })
-        }
+        () => {}
       )
     },
     getProfileList() {
-      Loading.show({
-        pinner: QSpinnerGrid,
-        message: '正在加载数据，请稍后...',
-      })
       this.profileList = []
       api.get(this.$yggApi + "/server/users/" + Cookies.get("uuid"), {
         headers: {
@@ -119,7 +109,6 @@ export default defineComponent({
               }
             )
           });
-          Loading.hide()
         }
       ).catch(
         () => {

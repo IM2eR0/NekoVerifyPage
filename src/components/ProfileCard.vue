@@ -89,8 +89,7 @@
 
       <q-card-section class="qt-none">
         <q-tabs v-model="skinform" active-color="primary">
-          <!-- 手动上传因新版API文档不清晰，暂时无法使用 -->
-          <!-- <q-tab name="手动上传">手动上传</q-tab> -->
+          <q-tab name="手动上传">手动上传</q-tab>
           <q-tab name="正版">从正版账号</q-tab>
           <q-tab name="LS">从LittleSkin</q-tab>
           <q-tab name="DEL">删除皮肤</q-tab>
@@ -101,8 +100,11 @@
           <q-file v-model="skinfile" label="点击上传文件" accept=".png" max-file-size="5120" hint="仅支持png文件，大小需要控制在5kb以内" />
 
           <q-card-actions align="center">
-            <q-btn flat label="确认" color="primary" v-close-popup @click="uploadskin(id)" />
+            <q-btn flat label="确认" color="primary" v-close-popup @click="uploadskin(id)" disabled />
           </q-card-actions>
+          <center style="color: red">
+            无法使用：后端异常
+          </center>
         </template>
         <template v-if="skinform == '正版'">
           <q-input label="正版账户用户名" v-model="mojang"></q-input>
@@ -127,13 +129,8 @@
           <q-select outlined v-model="skindel" :options="skindelopt" label="材质类型" />
 
           <q-card-actions align="center">
-            <q-btn flat label="确认" color="primary" v-close-popup @click="delSkin(id)" disable/>
+            <q-btn flat label="确认" color="primary" v-close-popup @click="delSkin(id)"/>
           </q-card-actions>
-          <div style="color: red">
-            <center>
-              该功能暂不可用：后端异常。
-            </center>
-          </div>
         </template>
       </q-card-section>
     </q-card>
@@ -143,7 +140,7 @@
 <script lang="ts">
 import { api } from 'src/boot/axios';
 import { defineComponent, ref } from 'vue';
-import { Cookies, Notify, Loading } from 'quasar';
+import { Cookies, Notify } from 'quasar';
 
 export default defineComponent({
   name: "ProfileCard",
@@ -205,7 +202,7 @@ export default defineComponent({
           message: "请输入有效的用户名！",
         })
       }
-      api.patch(this.$yggApi + "/server/profiles/" + id, {
+      api.patch("/server/profiles/" + id, {
         name: this.newname
       }, {
         headers: {
@@ -216,12 +213,7 @@ export default defineComponent({
           location.reload()
         }
       ).catch(
-        () => {
-          Notify.create({
-            type: 'negative',
-            message: "该用户名已存在：" + this.newname,
-          })
-        }
+        () => {}
       )
     },
     uploadskin(id) {
@@ -236,18 +228,10 @@ export default defineComponent({
           location.reload()
         }
       ).catch(
-        (err) => {
-          Notify.create({
-            type: 'negative',
-            message: "上传失败，请联系网站管理员",
-          })
-        }
+        (err) => {}
       )
     },
     fromMojang(id) {
-      Loading.show({
-        message: '正在与服务器通信，请稍后...',
-      })
       api.patch(this.$yggApi + "/server/profiles/" + id + "/textures?operation=copyFromOfficial", {
         profileName: this.mojang
       }, {
@@ -261,9 +245,6 @@ export default defineComponent({
       )
     },
     fromLS(id) {
-      Loading.show({
-        message: '正在与服务器通信，请稍后...',
-      })
       api.patch(this.$yggApi + "/server/profiles/" + id + "/textures?operation=importFromLittleskin", {
         littleskinTid: this.littleSkin
       }, {
@@ -277,9 +258,6 @@ export default defineComponent({
       )
     },
     delSkin(id) {
-      Loading.show({
-        message: '正在与服务器通信，请稍后...',
-      })
       let stype
       if (this.skindel == "皮肤") {
         stype = "skin"
@@ -290,7 +268,6 @@ export default defineComponent({
       if (this.skindel == "全部") {
         stype = "all"
       }
-      console.log(Cookies.get("accessToken"))
       api.delete(this.$yggApi + "/server/profiles/" + id + "/textures/" + stype, {
         headers: {
           Authorization: "Bearer " + Cookies.get("accessToken")

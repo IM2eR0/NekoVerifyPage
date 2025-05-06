@@ -1,8 +1,8 @@
 {
   "name": "main",
   "version": "0.0.1",
-  "description": "MioVerify Pages",
-  "productName": "MioVerify",
+  "description": "NekoVerify Pages",
+  "productName": "NekoVerify",
   "author": "OriginalSnow <70016672+IM2eR0@users.noreply.github.com>",
   "private": true,
   "scripts": {

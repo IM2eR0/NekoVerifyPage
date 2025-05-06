@@ -1,7 +1,8 @@
 <template>
   <q-layout view="hHh LpR fFf">
 
-    <q-header elevated class="bg-accent text-white" height-hint="0" :class="isinhome ? 'inhome' : ''" reveal :model-value="!isinhome || $leftDrawer.stats.value">
+    <q-header elevated class="bg-accent text-white" height-hint="0" :class="isinhome ? 'inhome' : ''" reveal
+      :model-value="!isinhome || $leftDrawer.stats.value">
       <q-toolbar>
 
         <q-btn dense flat round icon="menu" @click="$leftDrawer.toggle()" />
@@ -16,6 +17,7 @@
     <q-drawer v-model="$leftDrawer.stats.value" side="left" overlay behavior="desktop" elevated>
 
       <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+      <AdminLink v-if="role == 'admin'" />
 
       <hr>
 
@@ -36,11 +38,11 @@
 </template>
 
 <style scoped>
-.q-header{
+.q-header {
   transition: all .3s;
 }
 
-.inhome{
+.inhome {
   background-color: rgba(142, 202, 255, 0.6) !important;
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
@@ -54,23 +56,21 @@ import { defineComponent, ref, inject } from 'vue'
 import { Cookies, Notify } from 'quasar';
 import EssentialLink from 'components/EssentialLink.vue'
 import { useRouter } from 'vue-router';
+import AdminLink from 'src/components/AdminLink.vue';
 
 export default defineComponent({
   name: 'MainLayout',
   components: {
-    EssentialLink
+    EssentialLink,
+    AdminLink
   },
   mounted() {
 
-    if(this.$route.path == "/home"){
+    if (this.$route.path == "/home") {
       this.isinhome = true
     }
 
-    if(!Cookies.get("accessToken")){
-      Notify.create({
-        type: 'negative',
-        message: '您还未登录，请登录...'
-      });
+    if (!Cookies.get("accessToken")) {
       this.$router.push('/login')
       Cookies.remove("accessToken")
       Cookies.remove("uuid")
@@ -78,34 +78,26 @@ export default defineComponent({
     }
 
     if (!Cookies.get("uuid")) {
-      Notify.create({
-        type: 'negative',
-        message: 'uuid存储出现异常，请重新登录...'
-      });
       this.$router.push('/login')
       Cookies.remove("accessToken")
       Cookies.remove("uuid")
       return
     }
 
-    api.patch(this.$yggApi+"/server/sessions", {
+    api.patch(this.$yggApi + "/server/sessions", {
       accessToken: Cookies.get("accessToken")
     }).then(
       (res) => {
         Cookies.set("accessToken", res["data"]["accessToken"])
       }
     ).catch((error) => {
-      Notify.create({
-        type: 'negative',
-        message: '您未登录，请登录后继续...'
-      });
       this.$router.push('/login')
       Cookies.remove("accessToken")
       Cookies.remove("uuid")
       return
     });
 
-    if(this.$router.currentRoute.value.fullPath == "/"){
+    if (this.$router.currentRoute.value.fullPath == "/") {
       this.$router.push("/home")
     }
 
@@ -116,11 +108,11 @@ export default defineComponent({
     const leftDrawerOpen = ref(false)
     const webTitle = ref("")
 
-    if(!Cookies.get("accessToken") || !Cookies.get("uuid")){
+    if (!Cookies.get("accessToken") || !Cookies.get("uuid")) {
       useRouter().push("/login")
-      setTimeout(()=>{
+      setTimeout(() => {
         location.reload()
-      },500)
+      }, 500)
     }
 
     api.get($yggApi + "/server/settings").then(
@@ -141,20 +133,25 @@ export default defineComponent({
     )
     const linksList = [
       {
-        title: '个人信息',
-        icon: 'mdi-file-document-outline',
+        title: '主页',
+        icon: 'mdi-home-variant-outline',
         link: '/home'
       },
       {
+        title: '个人信息',
+        icon: 'mdi-account-circle-outline',
+        link: '/my'
+      },
+      {
         title: '角色列表',
-        icon: 'mdi-file-document-outline',
+        icon: 'mdi-account-multiple',
         link: '/profiles'
       },
       {
-        title: '配置文件',
-        icon: 'mdi-file-document-outline',
+        title: '设置与功能',
+        icon: 'mdi-cog',
         link: '/settings'
-      },
+      }
     ]
 
 
@@ -163,10 +160,11 @@ export default defineComponent({
       isinhome: ref(false),
       essentialLinks: linksList,
       webTitle,
+      role: JSON.parse(sessionStorage.getItem("userInfomation")).role,
     }
   },
   updated() {
-    if(this.$router.currentRoute.value.fullPath == "/"){
+    if (this.$router.currentRoute.value.fullPath == "/") {
       this.$router.push("/home")
     }
   },
@@ -183,10 +181,10 @@ export default defineComponent({
     }
   },
   watch: {
-    $route(to,from){
-      if(to.path == "/home"){
+    $route(to, from) {
+      if (to.path == "/home") {
         this.isinhome = true
-      }else{
+      } else {
         this.isinhome = false
       }
     }
